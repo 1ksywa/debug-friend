@@ -1,13 +1,17 @@
 // =====================================================================
 //  DEBUG Friend ! - interface principale
 // =====================================================================
-import { etat, h, ecran, tt, api, lireFichier, ecrireFichier, listeFichiers, journal, action, alerte, annoncer, dateLocale, masquer, attendre } from './ui.js';
+import { cyr } from './cyrillique.js';
+import { etat, h, ecran, tt, api, lireFichier, ecrireFichier, listeFichiers, journal, action, alerte, annoncer, dateLocale, masquer, attendre, LANGUES } from './ui.js';
 import * as C from './coffre.js';
 import { qrEnSvg } from './qr.js';
 import { analyser, reverifier, resume, normaliser, ETAPES_ORDRE, FAMILLES, regle } from './regles.js';
 import { ecranTests, ecranChauffe, ecranSymptomes } from './tests.js';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.4';
+// Langue unique du logiciel : 'cy' = français écrit en cyrillique.
+// Mettre null pour retrouver le choix Français / English / cyrillique.
+const LANGUE_UNIQUE = 'cy';
 
 export const MODULES = [
   ['systeme', 'Système', 'System'],
@@ -54,8 +58,9 @@ async function demarrer() {
     history.replaceState(null, '', '/');
   }
   etat.jeton = sessionStorage.getItem('jeton') || '';
-  try { etat.langue = localStorage.getItem('langue') === 'en' ? 'en' : 'fr'; } catch (e) { /* rien */ }
-  document.documentElement.lang = etat.langue;
+  try { const l = localStorage.getItem('langue'); etat.langue = LANGUES.includes(l) ? l : 'fr'; } catch (e) { /* rien */ }
+  if (LANGUE_UNIQUE) etat.langue = LANGUE_UNIQUE;
+  document.documentElement.lang = codeLangue(etat.langue);
   if (!etat.jeton) {
     ecran(h('h1', null, tt('Lance DEBUG Friend ! depuis la clé', 'Start DEBUG Friend ! from the USB drive')),
       h('p', null, tt('Cette page s\'ouvre toute seule quand tu double-cliques sur « Lancer DEBUG Friend » sur la clé.', 'This page opens by itself when you double-click "Lancer DEBUG Friend" on the drive.')));
@@ -134,6 +139,7 @@ function contexteTests() {
 
 // ------------------------------------------------------------- creation du compte
 function ecranCreation() {
+  const blocRecuperer = h('div', { id: 'recuperer' });
   const mdp1 = h('input', { type: 'password', id: 'mdp1', autocomplete: 'new-password' });
   const mdp2 = h('input', { type: 'password', id: 'mdp2', autocomplete: 'new-password' });
   const btn = h('button', { class: 'principal', type: 'submit' }, tt('Créer mon accès', 'Create my access'));
@@ -160,10 +166,37 @@ function ecranCreation() {
   h('div', { class: 'boutons' }, btn));
   ecran(
     h('h1', null, tt('Bienvenue dans DEBUG Friend !', 'Welcome to DEBUG Friend !')),
-    h('p', null, tt('Première utilisation sur cette clé : crée ton accès. Il protège tes données par chiffrement, et il faudra aussi le code de ton appli à codes pour ouvrir le logiciel.', 'First use on this drive: create your access. It encrypts your data, and the code from your authenticator app will also be needed to open the app.')),
+    h('p', null, tt('Première utilisation dans ce dossier : crée ton accès. Il protège tes données par chiffrement, et il faudra aussi le code de ton appli à codes pour ouvrir le logiciel.', 'First use in this folder: create your access. It encrypts your data, and the code from your authenticator app will also be needed to open the app.')),
+    blocRecuperer,
     form,
     choixLangue()
   );
+  chercherSauvegarde(blocRecuperer);
+}
+
+// Compte deja cree sur un autre PC : on le recupere depuis Google Drive (ou la cle DEBUG-SECOURS)
+async function chercherSauvegarde(bloc) {
+  let info = null;
+  try { info = await api('/api/restaurer'); } catch (e) { return; }
+  if (!info || info.compteIci) return;
+  if (!info.disponible) {
+    bloc.replaceChildren(h('p', { class: 'petit' }, tt('Tu as déjà un compte sur un autre PC ? Installe Google Drive pour ordinateur sur ce PC, connecte-toi, attends la synchronisation puis relance DEBUG Friend ! : tu pourras récupérer ton compte au lieu d\'en créer un.', 'Already have an account on another PC? Install Google Drive for desktop here, sign in, wait for it to sync, then restart DEBUG Friend ! to get your account back.')));
+    return;
+  }
+  const quand = String(info.date || '').replace(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2}).*$/, '$3/$2/$1 $4:$5');
+  const ou = info.source === 'drive' ? 'Google Drive' : tt('la clé DEBUG-SECOURS', 'the DEBUG-SECOURS drive');
+  const btn = h('button', { class: 'principal', type: 'button', onclick: async () => {
+    btn.disabled = true;
+    try {
+      await api('/api/restaurer', { corps: {} });
+      annoncer(tt('Compte récupéré.', 'Account restored.'));
+      location.reload();
+    } catch (e) { btn.disabled = false; alerte(e.message); }
+  } }, tt('Récupérer mon compte', 'Restore my account'));
+  bloc.replaceChildren(h('div', { class: 'cadre' },
+    h('h2', null, tt('Tu as déjà un compte ?', 'Already have an account?')),
+    h('p', null, tt('Une sauvegarde de ton compte a été trouvée sur ', 'A backup of your account was found on ') + ou + ' (' + quand + tt('). Récupère-la pour garder ton mot de passe, ton appli à codes et ton historique.', '). Restore it to keep your password, authenticator app and history.')),
+    h('div', { class: 'boutons' }, btn)));
 }
 
 // Etape QR code + verification du code + code de secours
@@ -284,12 +317,16 @@ function ecranRecuperation() {
 }
 
 function choixLangue() {
-  return h('p', { class: 'petit' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); changerLangue(etat.langue === 'fr' ? 'en' : 'fr'); } }, etat.langue === 'fr' ? 'English' : 'Français'));
+  if (LANGUE_UNIQUE) return null;
+  return h('p', { class: 'petit' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); changerLangue(etat.langue === 'en' ? 'fr' : 'en'); } }, etat.langue === 'en' ? 'Français' : 'English'));
 }
 
+// Code de langue pour le navigateur (lecteurs d'écran, césure)
+const codeLangue = (l) => (l === 'cy' ? 'fr-Cyrl' : l);
+
 function changerLangue(l) {
-  etat.langue = l;
-  document.documentElement.lang = l;
+  etat.langue = LANGUES.includes(l) ? l : 'fr';
+  document.documentElement.lang = codeLangue(etat.langue);
   try { localStorage.setItem('langue', l); } catch (e) { /* rien */ }
   if (etat.reglages) { etat.reglages.langue = l; enregistrerReglages(); }
   if (etat.cle) { menu('reglages'); ecranReglages(); } else if (etat.compte) ecranConnexion(); else ecranCreation();
@@ -303,9 +340,11 @@ async function ouvrirSession(cle) {
     const t = await lireFichier('reglages.dfx');
     if (t) etat.reglages = { ...etat.reglages, ...(await C.dechiffrerObjet(cle, t)) };
   } catch (e) { journal('Réglages illisibles : ' + e.message); }
-  if (etat.reglages.langue && etat.reglages.langue !== etat.langue) {
+  if (LANGUE_UNIQUE) etat.reglages.langue = LANGUE_UNIQUE;
+  if (LANGUES.includes(etat.reglages.langue) && etat.reglages.langue !== etat.langue) {
     etat.langue = etat.reglages.langue;
-    document.documentElement.lang = etat.langue;
+    document.documentElement.lang = codeLangue(etat.langue);
+    try { localStorage.setItem('langue', etat.langue); } catch (e) { /* rien */ }
   }
   ecranAccueil();
 }
@@ -547,7 +586,13 @@ function comparer(avant, apresProblemes, apresValeurs) {
 }
 
 // ------------------------------------------------------------- resultats
-const nombre = (x) => (etat.langue === 'fr' ? String(x || '').replace(/(\d)\.(\d)/g, '$1,$2') : String(x || ''));
+// Le résumé est écrit en français par regles.js : on l'adapte à la langue choisie
+const txtResume = (x) => {
+  const t = String(x || '');
+  if (etat.langue === 'en') return t.replace(/usure/g, 'wear').replace(/% de santé/g, '% health').replace(/^présente/, 'present');
+  return etat.langue === 'cy' ? cyr(t) : t;
+};
+const nombre = (x) => (etat.langue !== 'en' ? String(x || '').replace(/(\d)\.(\d)/g, '$1,$2') : String(x || ''));
 function etiquetteGravite(g) {
   const noms = { critique: tt('Critique', 'Critical'), important: tt('Important', 'Important'), conseil: tt('Conseil', 'Advice'), info: tt('Info', 'Info') };
   return h('span', { class: 'etiquette ' + g }, noms[g] || g);
@@ -564,7 +609,7 @@ function ecranResultats() {
   const enTete = h('div', { class: 'cadre' },
     h('h1', null, m(r.nom)),
     h('table', null, h('tbody', null,
-      [[tt('Windows', 'Windows'), r.windows], [tt('Processeur', 'CPU'), r.processeur], [tt('Mémoire', 'Memory'), nombre(r.ram)], [tt('Graphique', 'Graphics'), r.graphique], [tt('Disques', 'Disks'), r.disques], r.batterie ? [tt('Batterie', 'Battery'), r.batterie] : null, r.stabilite !== null && r.stabilite !== undefined ? [tt('Stabilité', 'Stability'), nombre(String(r.stabilite)) + ' / 10'] : null, [tt('Numéro de série', 'Serial number'), m(r.numeroSerie)]]
+      [[tt('Windows', 'Windows'), r.windows], [tt('Processeur', 'CPU'), r.processeur], [tt('Mémoire', 'Memory'), nombre(r.ram)], [tt('Graphique', 'Graphics'), r.graphique], [tt('Disques', 'Disks'), txtResume(r.disques)], r.batterie ? [tt('Batterie', 'Battery'), txtResume(r.batterie)] : null, r.stabilite !== null && r.stabilite !== undefined ? [tt('Stabilité', 'Stability'), nombre(String(r.stabilite)) + ' / 10'] : null, [tt('Numéro de série', 'Serial number'), m(r.numeroSerie)]]
         .filter(Boolean).map(([k, v]) => h('tr', null, h('th', { scope: 'row' }, k), h('td', null, v || '?'))))),
     h('p', { class: 'petit' }, tt('Analyse ', 'Analysis ') + (a.type === 'complete' ? tt('complète', 'full') : tt('rapide', 'quick')) + ' — ' + dateLocale(a.date) + ' — ' + a.duree + ' s' + (a.lectureSeule ? tt(' — lecture seule', ' — read-only') : '') + (a.etiquette ? ' — ' + a.etiquette : ''))
   );
@@ -795,8 +840,8 @@ async function ecranReglages() {
   const resultatSauv = h('p', { role: 'status' });
   ecran(
     h('h1', null, tt('Réglages', 'Settings')),
-    h('h2', null, tt('Langue', 'Language')),
-    h('div', { class: 'boutons' }, h('button', { class: etat.langue === 'fr' ? 'principal' : '', onclick: () => changerLangue('fr') }, 'Français'), h('button', { class: etat.langue === 'en' ? 'principal' : '', onclick: () => changerLangue('en') }, 'English')),
+    LANGUE_UNIQUE ? null : h('h2', null, tt('Langue', 'Language')),
+    LANGUE_UNIQUE ? null : h('div', { class: 'boutons' }, h('button', { class: etat.langue === 'fr' ? 'principal' : '', onclick: () => changerLangue('fr') }, 'Français'), h('button', { class: etat.langue === 'en' ? 'principal' : '', onclick: () => changerLangue('en') }, 'English'), h('button', { class: etat.langue === 'cy' ? 'principal' : '', onclick: () => changerLangue('cy') }, 'Франсэс (сириллике)')),
     h('h2', null, tt('Verrouillage automatique', 'Automatic lock')),
     h('label', { for: 'verrou' }, tt('Verrouiller après', 'Lock after')), minutes,
     h('h2', null, tt('Sauvegardes chiffrées', 'Encrypted backups')),

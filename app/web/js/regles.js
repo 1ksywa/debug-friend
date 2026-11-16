@@ -38,6 +38,8 @@ export const FAMILLES = {
 };
 
 // ------------------------------------------------------------- outils
+import { cyr, estPhrase } from './cyrillique.js';
+
 const L = (c) => (c && c.langue === 'en' ? 1 : 0);
 const jours = (iso, maintenant) => {
   if (!iso) return null;
@@ -1428,6 +1430,7 @@ export function analyser(donnees, ctx = {}) {
   const d = normaliser(donnees);
   const c = { langue: 'fr', maintenant: new Date(), ...ctx };
   const l = L(c);
+  const tr = c.langue === 'cy' ? cyr : (x) => x;
   const res = [];
   for (const r of R) {
     if (r.modules.some((m) => !d[m])) continue;
@@ -1435,6 +1438,9 @@ export function analyser(donnees, ctx = {}) {
     try { det = r.detecter(d, c); } catch (e) { det = null; }
     if (!det) continue;
     const gravite = det.gravite || r.gravite;
+    // Français cyrillique : on transforme les phrases, pas les noms d'appareils ni les nombres
+    const vals = {};
+    for (const [k, v] of Object.entries(det.vals || {})) vals[k] = c.langue === 'cy' && estPhrase(v) ? cyr(v) : v;
     res.push({
       id: r.id,
       famille: r.famille,
@@ -1442,9 +1448,9 @@ export function analyser(donnees, ctx = {}) {
       ordre: r.ordre,
       etape: Math.floor(r.ordre),
       modules: r.modules,
-      titre: remplir(r.titre[l], det.vals),
-      simple: remplir(r.simple[l], det.vals),
-      etapes: r.etapes.map((e) => remplir(e[l], det.vals)),
+      titre: remplir(tr(r.titre[l]), vals),
+      simple: remplir(tr(r.simple[l]), vals),
+      etapes: r.etapes.map((e) => remplir(tr(e[l]), vals)),
       technique: det.tech || '',
       action: r.action || null,
       action2: r.action2 || null

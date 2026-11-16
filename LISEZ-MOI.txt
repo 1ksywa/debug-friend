@@ -1,4 +1,4 @@
-﻿DEBUG Friend !  -  version 1.0.1 (Diagnostic)
+﻿DEBUG Friend !  -  version 1.0.4 (Diagnostic)
 Atelier DEBUG - EMPEREUR Arsène
 ==========================================================
 
@@ -35,6 +35,11 @@ Atelier DEBUG - EMPEREUR Arsène
      « Ce PC est à moi (Google Drive) » (Google Drive pour ordinateur doit
      être installé). Jamais sur le PC d'un client.
    - Tout est chiffré : sans ton mot de passe, les copies sont illisibles.
+   - MÊME COMPTE SUR TOUS TES PC : sur un autre de tes PC, installe Google
+     Drive pour ordinateur (même compte Google), télécharge DEBUG Friend !
+     depuis GitHub et lance-le. Au lieu de créer un compte, clique sur
+     « Récupérer mon compte » : même mot de passe, même appli à codes,
+     même historique.
 
 5. TEMPÉRATURES PRÉCISES (facultatif)
    Sans rien installer, DEBUG Friend ! lit une température approximative
@@ -45,7 +50,12 @@ Atelier DEBUG - EMPEREUR Arsène
    Coche « PC du travail : lecture seule » avant l'analyse : pas de test
    de chauffe, pas de pilote de température, aucune action qui modifie le PC.
 
-7. EN CAS DE PROBLÈME
+7. LANGUE : FRANÇAIS ÉCRIT EN CYRILLIQUE
+   Tout le logiciel s'affiche en français écrit avec l'alphabet cyrillique
+   (c'est la seule langue). Les marques, sigles,
+   commandes, chemins et nombres restent en alphabet latin.
+
+8. EN CAS DE PROBLÈME
    Le fichier donnees\journal.txt (sur la clé) note tout ce qui se passe.
    Envoie-le à Claude avec une capture d'écran du message.
 

@@ -11,7 +11,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.0.1'
+$Version = '1.0.4'
 $App = $PSScriptRoot
 $Racine = Split-Path $App -Parent
 $Web = Join-Path $App 'web'
@@ -166,6 +166,56 @@ function Rapport-Batterie {
 }
 
 # ------------------------------------------------------------------ sauvegardes chiffrees
+# Dossier "Mon Drive" de Google Drive pour ordinateur (lecteur G: ou dossier en miroir)
+function Trouver-Drive {
+    $lettres = @()
+    try { $lettres += @(Get-Volume | Where-Object { $_.FileSystemLabel -eq 'Google Drive' -and $_.DriveLetter } | ForEach-Object { [string]$_.DriveLetter }) } catch { }
+    try { $lettres += @(Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue | ForEach-Object { [string]$_.Name }) } catch { }
+    foreach ($l in ($lettres | Select-Object -Unique)) {
+        if ($l.Length -ne 1) { continue }
+        foreach ($sous in @('Mon Drive', 'My Drive')) {
+            $p = '{0}:\{1}' -f $l, $sous
+            if (Test-Path -LiteralPath $p) { return $p }
+        }
+    }
+    foreach ($sous in @('Mon Drive', 'My Drive', 'Google Drive\Mon Drive', 'Google Drive\My Drive', 'Google Drive')) {
+        $p = Join-Path $script:Util.profil $sous
+        if (Test-Path -LiteralPath $p) { return $p }
+    }
+    return $null
+}
+
+# Sauvegardes trouvees (cle DEBUG-SECOURS et Google Drive), la plus recente d'abord
+function Lister-Sauvegardes {
+    $sources = @()
+    try { foreach ($v in @(Get-Volume | Where-Object { $_.FileSystemLabel -eq 'DEBUG-SECOURS' -and $_.DriveLetter })) { $sources += @{ type = 'cle'; dossier = ('{0}:\DEBUG Friend - sauvegardes' -f $v.DriveLetter) } } } catch { }
+    $d = Trouver-Drive
+    if ($d) { $sources += @{ type = 'drive'; dossier = (Join-Path $d 'DEBUG Friend - sauvegardes') } }
+    $liste = @()
+    foreach ($s in $sources) {
+        if (-not (Test-Path -LiteralPath $s.dossier)) { continue }
+        foreach ($sd in @(Get-ChildItem -LiteralPath $s.dossier -Directory | Sort-Object Name -Descending)) {
+            if (Test-Path -LiteralPath (Join-Path $sd.FullName 'compte.json')) {
+                $liste += [ordered]@{ type = $s.type; nom = $sd.Name; chemin = $sd.FullName }
+            }
+        }
+    }
+    return @($liste | Sort-Object { $_.nom } -Descending)
+}
+
+function Restaurer {
+    if (Test-Path -LiteralPath (Join-Path $Donnees 'compte.json')) { throw 'Un compte existe deja dans ce dossier : rien n''a ete remplace.' }
+    $l = @(Lister-Sauvegardes)
+    if ($l.Count -eq 0) { throw 'Aucune sauvegarde trouvee (ni Google Drive, ni cle DEBUG-SECOURS).' }
+    $src = $l[0]
+    $n = 0
+    foreach ($f in @(Get-ChildItem -LiteralPath $src.chemin -File)) {
+        if (Nom-Valide $f.Name) { Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $Donnees $f.Name) -Force; $n++ }
+    }
+    Ecrire-Journal ('Donnees restaurees depuis ' + $src.type + ' (' + $src.nom + ', ' + $n + ' fichiers)')
+    return [ordered]@{ ok = $true; source = $src.type; date = $src.nom; fichiers = $n }
+}
+
 function Sauvegarder($versDrive) {
     $res = [ordered]@{ cle = $null; drive = $null; erreurs = @() }
     $fichiers = @(Get-ChildItem $Donnees -File | Where-Object { $_.Name -match '\.(json|dfx)$' })
@@ -175,18 +225,7 @@ function Sauvegarder($versDrive) {
     $secours = @(Get-Volume | Where-Object { $_.FileSystemLabel -eq 'DEBUG-SECOURS' -and $_.DriveLetter })
     foreach ($v in $secours) { $cibles += @{ type = 'cle'; dossier = ('{0}:\DEBUG Friend - sauvegardes' -f $v.DriveLetter) } }
     if ($versDrive) {
-        $trouve = $null
-        foreach ($v in @(Get-Volume | Where-Object { $_.FileSystemLabel -eq 'Google Drive' -and $_.DriveLetter })) {
-            foreach ($sous in @('Mon Drive', 'My Drive')) {
-                $p = '{0}:\{1}' -f $v.DriveLetter, $sous
-                if (Test-Path $p) { $trouve = $p }
-            }
-        }
-        if (-not $trouve) {
-            foreach ($p in @((Join-Path $script:Util.profil 'Google Drive\Mon Drive'), (Join-Path $script:Util.profil 'Google Drive\My Drive'), (Join-Path $script:Util.profil 'Google Drive'))) {
-                if (-not $trouve -and (Test-Path $p)) { $trouve = $p }
-            }
-        }
+        $trouve = Trouver-Drive
         if ($trouve) { $cibles += @{ type = 'drive'; dossier = (Join-Path $trouve 'DEBUG Friend - sauvegardes') } }
         else { $res.erreurs += 'Google Drive introuvable sur ce PC' }
     }
@@ -276,6 +315,17 @@ function Traiter-Api($ctx, [string]$chemin) {
             $corps = Lire-Corps $ctx | ConvertFrom-Json
             $res = Sauvegarder ([bool]$corps.drive)
             Repondre-Json $ctx 200 $res
+            return
+        }
+        '/api/restaurer' {
+            if ($methode -eq 'GET') {
+                $l = @(Lister-Sauvegardes)
+                $info = [ordered]@{ disponible = ($l.Count -gt 0); source = $null; date = $null; compteIci = (Test-Path -LiteralPath (Join-Path $Donnees 'compte.json')) }
+                if ($l.Count -gt 0) { $info.source = $l[0].type; $info.date = $l[0].nom }
+                Repondre-Json $ctx 200 $info
+                return
+            }
+            Repondre-Json $ctx 200 (Restaurer)
             return
         }
         '/api/journal' {

@@ -1,6 +1,7 @@
 // =====================================================================
 //  DEBUG Friend ! - outils communs de l'interface
 // =====================================================================
+import { cyr } from './cyrillique.js';
 
 export const etat = {
   jeton: '',
@@ -26,10 +27,12 @@ const T = {
 };
 export function t(fr) {
   if (etat.langue === 'en' && T.en[fr]) return T.en[fr];
-  return fr;
+  return etat.langue === 'cy' ? cyr(fr) : fr;
 }
 // Texte bilingue en ligne : tt('français', 'english')
-export function tt(fr, en) { return etat.langue === 'en' ? en : fr; }
+// 'cy' = français écrit en cyrillique (transformé automatiquement)
+export function tt(fr, en) { return etat.langue === 'en' ? en : etat.langue === 'cy' ? cyr(fr) : fr; }
+export const LANGUES = ['fr', 'en', 'cy'];
 
 // ------------------------------------------------------------- DOM
 export function h(tag, attrs, ...enfants) {
