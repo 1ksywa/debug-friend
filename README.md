@@ -1,6 +1,6 @@
 # DEBUG Friend !
 
-Logiciel de diagnostic PC portable (Windows 10/11) de l'atelier **DEBUG**.
+Logiciel de diagnostic PC / portable (Windows 10/11) de l'atelier **DEBUG**.
 Il analyse le PC, explique les problèmes trouvés et comment les régler, et propose des tests guidés (clavier, écran, son, micro, webcam, USB, charge, chauffe).
 
 ## Télécharger
