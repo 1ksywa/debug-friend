@@ -1,0 +1,57 @@
+﻿DEBUG Friend !  -  version 1.0.1 (Diagnostic)
+Atelier DEBUG - EMPEREUR Arsène
+==========================================================
+
+1. METTRE LE LOGICIEL SUR LA CLÉ
+   - Avant de décompresser le zip : clic droit sur le zip > Propriétés >
+     coche « Débloquer » > OK (sinon Windows peut bloquer certains fichiers).
+   - Décompresse, puis copie le dossier « DEBUG Friend » à la racine de la
+     clé Lexar (exemple : E:\DEBUG Friend).
+   - Conseillé : renomme la clé « DEBUG » (clic droit sur la clé > Renommer).
+
+2. LANCER
+   - Double-clic sur « Lancer DEBUG Friend.cmd ».
+   - Windows demande les droits administrateur : réponds Oui.
+     (Sur un compte sans droits, tape le mot de passe administrateur du PC.)
+   - Le navigateur s'ouvre tout seul sur l'interface.
+   - Une petite fenêtre « DEBUG Friend ! - ne ferme pas cette fenêtre » reste
+     réduite dans la barre des tâches : ne la ferme pas pendant l'utilisation.
+   - Pour quitter : bouton « Quitter » dans le navigateur.
+   - Si Windows affiche « Windows a protégé votre ordinateur » :
+     « Informations complémentaires » > « Exécuter quand même ».
+
+3. PREMIER LANCEMENT
+   - Choisis un mot de passe d'au moins 12 caractères.
+   - Scanne le QR code avec Google Authenticator ou Microsoft Authenticator.
+   - IMPRIME ou RECOPIE le code de secours et range-le loin de la clé.
+     Sans mot de passe ET sans code de secours, les données sont perdues :
+     personne ne peut les déchiffrer, même pas moi.
+
+4. SAUVEGARDES
+   - Clé de secours : prends une deuxième clé USB et renomme-la
+     « DEBUG-SECOURS ». Quand elle est branchée, chaque analyse y est copiée
+     (dossier « DEBUG Friend - sauvegardes », 10 dernières copies).
+   - Google Drive : seulement sur TON PC. Dans Réglages, coche
+     « Ce PC est à moi (Google Drive) » (Google Drive pour ordinateur doit
+     être installé). Jamais sur le PC d'un client.
+   - Tout est chiffré : sans ton mot de passe, les copies sont illisibles.
+
+5. TEMPÉRATURES PRÉCISES (facultatif)
+   Sans rien installer, DEBUG Friend ! lit une température approximative
+   (zone thermique de Windows) et la vraie température des cartes NVIDIA.
+   Pour des mesures précises : voir outils\LibreHardwareMonitor\A-LIRE.txt
+
+6. PC DE TRAVAIL / PC D'ENTREPRISE
+   Coche « PC du travail : lecture seule » avant l'analyse : pas de test
+   de chauffe, pas de pilote de température, aucune action qui modifie le PC.
+
+7. EN CAS DE PROBLÈME
+   Le fichier donnees\journal.txt (sur la clé) note tout ce qui se passe.
+   Envoie-le à Claude avec une capture d'écran du message.
+
+Ce que contient le dossier :
+   Lancer DEBUG Friend.cmd   le bouton de lancement
+   app\                      le logiciel (ne rien modifier)
+   donnees\                  créé au 1er lancement : compte, réglages et
+                             historique des PC, tout chiffré
+   outils\                   outils facultatifs (températures)

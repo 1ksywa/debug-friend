@@ -1,0 +1,20 @@
+﻿TEMPÉRATURES PRÉCISES AVEC LIBREHARDWAREMONITOR (facultatif)
+==========================================================
+
+LibreHardwareMonitor est un logiciel libre qui lit les capteurs du
+processeur, de la carte graphique et des ventilateurs.
+
+1. Sur ton PC, va sur la page officielle :
+   https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases
+2. Télécharge le zip de la dernière version (LibreHardwareMonitor-net472.zip
+   ou le zip principal), clic droit > Propriétés > Débloquer, puis décompresse.
+3. Copie TOUS les fichiers .dll du zip (dont LibreHardwareMonitorLib.dll et
+   HidSharp.dll) dans CE dossier :  outils\LibreHardwareMonitor\
+
+DEBUG Friend ! demande toujours la permission avant de l'utiliser sur un PC,
+et ne l'utilise jamais en mode « PC du travail : lecture seule ».
+
+Bon à savoir : LibreHardwareMonitor charge un petit pilote Windows pour lire
+les capteurs. Certains antivirus ou Windows (intégrité de la mémoire) peuvent
+le bloquer : dans ce cas DEBUG Friend ! repasse tout seul sur la mesure
+approximative, rien ne plante.

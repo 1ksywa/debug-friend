@@ -1,0 +1,115 @@
+/* DEBUG Friend ! - deux couleurs seulement : noir #000000 et blanc #FFFFFF.
+   Petits textes : plus petits et en italique, jamais en gris.
+   Mise en valeur : l'inverse (noir sur blanc), le gras, l'italique. */
+
+@font-face { font-family: 'Inter'; src: url('polices/Inter-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Inter'; src: url('polices/Inter-Italic.otf') format('opentype'); font-weight: 400; font-style: italic; }
+@font-face { font-family: 'Inter'; src: url('polices/Inter-SemiBold.otf') format('opentype'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Inter'; src: url('polices/Inter-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; }
+
+:root { --n: #000000; --b: #FFFFFF; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--n); color: var(--b); }
+body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.5; min-height: 100vh; }
+a { color: var(--b); }
+h1, h2, h3 { line-height: 1.25; margin: 0 0 12px; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 600; margin-top: 28px; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 22px; }
+li { margin-bottom: 4px; }
+.petit { font-size: 14px; font-style: italic; }
+.mono { font-family: Consolas, 'Cascadia Mono', 'Courier New', monospace; }
+
+.entete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--b); }
+.marque { display: flex; align-items: center; gap: 10px; }
+.marque .nom { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 22px; letter-spacing: 0.06em; }
+.menu { display: flex; flex-wrap: wrap; gap: 6px; }
+.menu button { font-size: 14px; padding: 6px 12px; min-height: 36px; }
+.menu button[aria-current="page"] { background: var(--b); color: var(--n); }
+
+.ecran { max-width: 980px; margin: 0 auto; padding: 28px 24px 80px; outline: none; }
+
+button, .bouton { font: inherit; font-weight: 600; color: var(--b); background: var(--n); border: 2px solid var(--b); border-radius: 6px; padding: 10px 18px; min-height: 44px; cursor: pointer; }
+button.principal { background: var(--b); color: var(--n); }
+button:hover { text-decoration: underline; }
+button:disabled { cursor: not-allowed; border-style: dashed; text-decoration: none; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visible { outline: 3px solid var(--b); outline-offset: 3px; }
+.boutons { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+
+label { display: block; font-weight: 600; margin: 14px 0 6px; }
+input[type=text], input[type=password], input[type=number], select, textarea { font: inherit; color: var(--b); background: var(--n); border: 2px solid var(--b); border-radius: 6px; padding: 10px 12px; width: 100%; max-width: 460px; }
+::placeholder { color: var(--b); opacity: 1; font-style: italic; font-size: 0.9em; }
+::selection { background: var(--b); color: var(--n); }
+html { scrollbar-color: var(--b) var(--n); }
+input[type=checkbox], input[type=radio] { width: 20px; height: 20px; accent-color: #FFFFFF; vertical-align: middle; margin-right: 8px; }
+.choix { display: flex; align-items: flex-start; gap: 4px; font-weight: 400; margin: 10px 0; }
+.choix input { margin-top: 3px; }
+fieldset { border: 1px solid var(--b); border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+legend { font-weight: 600; padding: 0 6px; }
+
+.cadre { border: 1px solid var(--b); border-radius: 8px; padding: 18px 20px; margin: 16px 0; }
+.inverse { background: var(--b); color: var(--n); }
+.inverse a, .inverse button { color: var(--n); border-color: var(--n); background: var(--b); }
+.inverse button.principal { background: var(--n); color: var(--b); }
+
+.grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tuile { border: 2px solid var(--b); border-radius: 8px; padding: 16px; text-align: left; font-weight: 400; min-height: 100px; }
+.tuile b { display: block; font-size: 17px; margin-bottom: 4px; }
+
+table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; }
+th, td { border: 1px solid var(--b); padding: 6px 10px; text-align: left; vertical-align: top; font-size: 15px; }
+th { font-weight: 600; }
+
+.etape-titre { margin-top: 32px; padding-bottom: 6px; border-bottom: 2px solid var(--b); }
+.probleme { border: 1px solid var(--b); border-radius: 8px; padding: 16px 18px; margin: 12px 0; }
+.probleme.critique { border-width: 3px; }
+.probleme h3 { margin-bottom: 6px; }
+.etiquette { display: inline-block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--b); border-radius: 4px; padding: 1px 8px; margin-right: 8px; vertical-align: 2px; }
+.etiquette.critique { background: var(--b); color: var(--n); }
+.etiquette.conseil, .etiquette.info { font-style: italic; font-weight: 400; }
+.etat { font-weight: 700; }
+.probleme.regle { border-style: dashed; }
+.probleme.regle h3::before { content: '✓ '; }
+.probleme.ignore { border-style: dotted; }
+details { margin: 10px 0 12px; }
+summary { cursor: pointer; font-size: 14px; font-style: italic; }
+details .tech { font-family: Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; margin-top: 6px; }
+
+.progression { list-style: none; padding: 0; }
+.progression li { padding: 4px 0; }
+.progression li::before { content: '○ '; }
+.progression li.fait::before { content: '● '; }
+.progression li.encours { font-weight: 700; }
+.progression li.encours::before { content: '◐ '; }
+.progression li.erreur::before { content: '✕ '; }
+
+.compteurs { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.compteurs span { border: 1px solid var(--b); border-radius: 6px; padding: 6px 12px; }
+.compteurs span.fort { background: var(--b); color: var(--n); font-weight: 700; }
+
+.qr { background: var(--b); padding: 12px; display: inline-block; border-radius: 6px; }
+.code-secours { font-family: Consolas, monospace; font-size: 24px; letter-spacing: 0.08em; padding: 14px 18px; border: 2px dashed var(--b); display: inline-block; }
+
+.clavier { display: flex; flex-direction: column; gap: 6px; margin: 16px 0; }
+.rangee { display: flex; gap: 6px; flex-wrap: wrap; }
+.touche { min-width: 44px; height: 44px; border: 1px solid var(--b); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 13px; padding: 0 6px; }
+.touche.ok { background: var(--b); color: var(--n); font-weight: 700; }
+.zone-touchpad { border: 2px dashed var(--b); border-radius: 8px; height: 180px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+
+.plein-ecran { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; padding: 20px; cursor: pointer; }
+.plein-ecran.noir { background: var(--n); color: var(--b); }
+.plein-ecran.blanc { background: var(--b); color: var(--n); }
+
+.mesures { font-family: Consolas, monospace; font-size: 18px; }
+.annonce { position: absolute; left: -9999px; }
+video { max-width: 100%; border: 1px solid var(--b); }
+canvas.charge-gpu { width: 160px; height: 90px; border: 1px solid var(--b); }
+
+@media print {
+  html, body { background: #FFFFFF; color: #000000; }
+  .entete, .boutons, .pas-imprimer { display: none !important; }
+  .code-secours { border-color: #000000; }
+}
+input:-webkit-autofill { -webkit-text-fill-color: #FFFFFF; box-shadow: 0 0 0 1000px #000000 inset; caret-color: #FFFFFF; }
