@@ -1,4 +1,4 @@
-﻿DEBUG Friend !  -  version 1.0.4 (Diagnostic)
+﻿DEBUG Friend !  -  version 1.0.5 (Diagnostic)
 Atelier DEBUG - EMPEREUR Arsène
 ==========================================================
 
@@ -50,9 +50,9 @@ Atelier DEBUG - EMPEREUR Arsène
    Coche « PC du travail : lecture seule » avant l'analyse : pas de test
    de chauffe, pas de pilote de température, aucune action qui modifie le PC.
 
-7. LANGUE : FRANÇAIS ÉCRIT EN CYRILLIQUE
-   Tout le logiciel s'affiche en français écrit avec l'alphabet cyrillique
-   (c'est la seule langue). Les marques, sigles,
+7. LANGUE
+   Français ou anglais : Réglages > Langue (ou le lien « English » sur
+   l'écran de connexion). Les marques, sigles,
    commandes, chemins et nombres restent en alphabet latin.
 
 8. EN CAS DE PROBLÈME
